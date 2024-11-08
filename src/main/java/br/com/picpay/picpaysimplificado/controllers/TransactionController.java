@@ -11,17 +11,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequestMapping("/transactions")
 @RequiredArgsConstructor
-public class TransactionController {
+public class  TransactionController {
 
     private final TransactionService service;
 
-
     @PostMapping
     public ResponseEntity<Transaction> createTransaction(@RequestBody TransactionDTO transaction) throws Exception {
-        Transaction newTransaction = this.service.createTransaction(transaction);
-        return new ResponseEntity<>(newTransaction, HttpStatus.OK);
+        Transaction createTransaction = this.service.createTransaction(transaction);
+        return new ResponseEntity<>(createTransaction, HttpStatus.OK);
     }
 }

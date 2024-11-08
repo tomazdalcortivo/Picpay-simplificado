@@ -5,12 +5,11 @@ import br.com.picpay.picpaysimplificado.domain.user.User;
 import br.com.picpay.picpaysimplificado.dto.TransactionDTO;
 import br.com.picpay.picpaysimplificado.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -22,8 +21,6 @@ public class TransactionService {
 
     private final TransactionRepository repository;
 
-    private final NotificationService notificationService;
-
     private final RestTemplate restTemplate;
 
     public Transaction createTransaction(TransactionDTO transaction) throws Exception {
@@ -32,41 +29,47 @@ public class TransactionService {
 
         userService.validateTransaction(sender, transaction.value());
 
-        boolean isAuthorized = this.authorizeTransaction(sender, transaction.value());
+        boolean isAuthorized = this.authorizeTransaction();
 
-        if (!isAuthorized) {
+        if (!isAuthorized)
             throw new Exception("Transação não autorizada");
-        }
 
-        Transaction newTransaction = new Transaction();
-        newTransaction.setAmount(transaction.value());
-        newTransaction.setReceiver(sender);
-        newTransaction.setSender(receiver);
-        newTransaction.setTimestamp(LocalDateTime.now());
+
+        Transaction createTransaction = new Transaction();
+        createTransaction.setAmount(transaction.value());
+        createTransaction.setReceiver(receiver);
+        createTransaction.setSender(sender);
+        createTransaction.setTimestamp(LocalDateTime.now());
 
         sender.setBalance(sender.getBalance().subtract(transaction.value()));
         receiver.setBalance(receiver.getBalance().add(transaction.value()));
 
-        this.repository.save(new Transaction());
+        this.repository.save(createTransaction);
         this.userService.saveUser(sender);
         this.userService.saveUser(receiver);
 
-        this.notificationService.sendNotification(sender, "Transação realizada com sucesso");
-        this.notificationService.sendNotification(receiver, "Transação recebida com sucesso");
 
-        return newTransaction;
+        return createTransaction;
     }
 
-    /**
-     * metodo defasado
-     */
-    public boolean authorizeTransaction(User sender, BigDecimal value) {
-        ResponseEntity<Map> authorizationResponse = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
+    private boolean authorizeTransaction() {
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
 
+            if (response.getStatusCode().is2xxSuccessful() || response.getStatusCode().value() == 403) {
+                Map<String, Object> responseBody = response.getBody();
+                if (responseBody != null) {
+                    String status = (String) responseBody.get("status");
+                    Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
 
-        if (authorizationResponse.getStatusCode() == HttpStatus.OK) {
-            String message = (String) authorizationResponse.getBody().get("mensage");
-            return "Autorizado".equalsIgnoreCase(message);
-        } else return false;
+                    return "success".equalsIgnoreCase(status)
+                            && data != null
+                            && Boolean.TRUE.equals(data.get("authorization"));
+                }
+            }
+        } catch (HttpStatusCodeException e) {
+            System.out.println("Erro ao autorizar transação: " + e.getMessage());
+        }
+        return false;
     }
 }
