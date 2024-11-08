@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.Map;
 
 @Service
@@ -23,33 +23,36 @@ public class TransactionService {
 
     private final RestTemplate restTemplate;
 
-    public Transaction createTransaction(TransactionDTO transaction) throws Exception {
-        User sender = this.userService.findUserById(transaction.senderId());
-        User receiver = this.userService.findUserById(transaction.receiverId());
+    public Transaction createTransaction(TransactionDTO transactionDTO) throws Exception {
+        User sender = getUserById(transactionDTO.senderId());
+        User receiver = getUserById(transactionDTO.receiverId());
 
-        userService.validateTransaction(sender, transaction.value());
+        userService.validateUserTypeAndAmount(sender, transactionDTO.value());
+        authorizeTransactionOrThrow();
 
-        boolean isAuthorized = this.authorizeTransaction();
+        Transaction createTransaction = transactionDTO.toTransaction(sender, receiver);
 
-        if (!isAuthorized)
-            throw new Exception("Transação não autorizada");
-
-
-        Transaction createTransaction = new Transaction();
-        createTransaction.setAmount(transaction.value());
-        createTransaction.setReceiver(receiver);
-        createTransaction.setSender(sender);
-        createTransaction.setTimestamp(LocalDateTime.now());
-
-        sender.setBalance(sender.getBalance().subtract(transaction.value()));
-        receiver.setBalance(receiver.getBalance().add(transaction.value()));
+        updateBalanceAndSaveUser(sender, receiver, transactionDTO.value());
 
         this.repository.save(createTransaction);
+        return createTransaction;
+    }
+
+    private void authorizeTransactionOrThrow() throws Exception{
+        if (!this.authorizeTransaction())
+            throw new Exception("Transação não autorizada");
+    }
+
+    private User getUserById(Long userId) throws Exception {
+        return this.userService.findUserById(userId);
+    }
+
+    private void updateBalanceAndSaveUser(User sender, User receiver, BigDecimal amount){
+        sender.setBalance(sender.getBalance().subtract(sender.getBalance().subtract(amount)));
+        receiver.setBalance(receiver.getBalance().add(amount));
+
         this.userService.saveUser(sender);
         this.userService.saveUser(receiver);
-
-
-        return createTransaction;
     }
 
     private boolean authorizeTransaction() {
