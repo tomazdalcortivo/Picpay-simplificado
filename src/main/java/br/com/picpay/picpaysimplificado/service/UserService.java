@@ -16,7 +16,7 @@ public class UserService {
 
     private final UserRepository repository;
 
-    public void validateTransaction(User sender, BigDecimal amount) throws Exception {
+    public void validateUserTypeAndAmount(User sender, BigDecimal amount) throws Exception {
         if (sender.getUserType() == UserType.MERCHANT) {
             throw new Exception("Usuario do tipo logista Não está autorizado a realizar a tranzação");
         }
@@ -35,9 +35,9 @@ public class UserService {
     }
 
     public User createUser(UserDTO data) {
-        User newUser = new User(data);
-        this.saveUser(newUser);
-        return newUser;
+        User createUser = data.toUser();
+        this.saveUser(createUser);
+        return createUser;
     }
 
     public List<User> getAllUsers() {
