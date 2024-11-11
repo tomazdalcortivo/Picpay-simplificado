@@ -1,12 +1,12 @@
-<p align="center" width="100%">
+<p style="text-align: center; width: 100%;">
     <img width="30%" src="https://github.com/buildrun-tech/buildrun-desafio-backend-picpay/blob/main/images/picpay-logo.jpg"> 
 </p>
 
-<h3 align="center">
+<h3 style="text-align: center; ">
   PicPay Backend Challenge
 </h3>
 
-<p align="center">
+<p style="text-align: center;">
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-%2304D361">
   <img alt="Language: Java" src="https://img.shields.io/badge/language-java-green">
   <img alt="Version: 1.0" src="https://img.shields.io/badge/version-1.0-yellowgreen">
@@ -14,7 +14,8 @@
 
 ## Project Overview
 
-This project is a backend challenge proposed by PicPay to develop an API that manages user transactions. It is designed following Java and Spring Boot best practices to ensure performance, scalability, and maintainability.
+This project is a backend challenge proposed by PicPay to develop an API that manages user transactions. It is designed
+following Java and Spring Boot best practices to ensure performance, scalability, and maintainability.
 
 ### Key Functionalities
 
