@@ -3,6 +3,7 @@ package br.com.picpay.picpaysimplificado.service;
 import br.com.picpay.picpaysimplificado.domain.transaction.Transaction;
 import br.com.picpay.picpaysimplificado.domain.user.User;
 import br.com.picpay.picpaysimplificado.dto.TransactionDTO;
+import br.com.picpay.picpaysimplificado.infra.exception.PicPayGeneralException;
 import br.com.picpay.picpaysimplificado.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -38,16 +39,16 @@ public class TransactionService {
         return createTransaction;
     }
 
-    private void authorizeTransactionOrThrow() throws Exception{
+    private void authorizeTransactionOrThrow() throws PicPayGeneralException {
         if (!this.authorizeTransaction())
-            throw new Exception("Transação não autorizada");
+            throw new PicPayGeneralException("Transação não autorizada");
     }
 
     private User getUserById(Long userId) throws Exception {
         return this.userService.findUserById(userId);
     }
 
-    private void updateBalanceAndSaveUser(User sender, User receiver, BigDecimal amount){
+    private void updateBalanceAndSaveUser(User sender, User receiver, BigDecimal amount) {
         sender.setBalance(sender.getBalance().subtract(sender.getBalance().subtract(amount)));
         receiver.setBalance(receiver.getBalance().add(amount));
 
