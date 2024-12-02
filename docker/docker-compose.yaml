@@ -1,0 +1,10 @@
+services:
+  oracle-db:
+    container_name: oracle-free
+    image: gvenzl/oracle-free
+    restart: always
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: user
+      ORACLE_DATABASE: picpay_simplificado
