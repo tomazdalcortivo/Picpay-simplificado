@@ -6,13 +6,9 @@ import br.com.picpay.picpaysimplificado.dto.TransactionDTO;
 import br.com.picpay.picpaysimplificado.infra.exception.PicPayGeneralException;
 import br.com.picpay.picpaysimplificado.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +18,7 @@ public class TransactionService {
 
     private final TransactionRepository repository;
 
-    private final RestTemplate restTemplate;
+    private final AuthService authService;
 
     public Transaction createTransaction(TransactionDTO transactionDTO) throws Exception {
         User sender = getUserById(transactionDTO.senderId());
@@ -40,7 +36,7 @@ public class TransactionService {
     }
 
     private void authorizeTransactionOrThrow() throws PicPayGeneralException {
-        if (!this.authorizeTransaction())
+        if (!this.authService.authorizeTransaction())
             throw new PicPayGeneralException("Transação não autorizada");
     }
 
@@ -56,24 +52,4 @@ public class TransactionService {
         this.userService.saveUser(receiver);
     }
 
-    private boolean authorizeTransaction() {
-        try {
-            ResponseEntity<Map> response = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
-
-            if (response.getStatusCode().is2xxSuccessful() || response.getStatusCode().value() == 403) {
-                Map<String, Object> responseBody = response.getBody();
-                if (responseBody != null) {
-                    String status = (String) responseBody.get("status");
-                    Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
-
-                    return "success".equalsIgnoreCase(status)
-                            && data != null
-                            && Boolean.TRUE.equals(data.get("authorization"));
-                }
-            }
-        } catch (HttpStatusCodeException e) {
-            System.out.println("Erro ao autorizar transação: " + e.getMessage());
-        }
-        return false;
-    }
 }
