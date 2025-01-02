@@ -29,15 +29,7 @@ class UserRepositoryTest {
     @DisplayName("Should get user successfully from DB")
     void findUserByDocumentCase1() {
         String document = "99999999901";
-
-        UserDTO data = new UserDTO(
-                "Pedro",
-                "Teste",
-                document,
-                new BigDecimal(10),
-                "test@gmail.com",
-                "44444",
-                UserType.COMMON);
+        UserDTO data = new UserDTO("Pedro", "Teste", document, new BigDecimal(10), "test@gmail.com", "44444", UserType.COMMON);
 
         this.persistUser(data);
 
