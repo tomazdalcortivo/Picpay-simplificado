@@ -26,8 +26,10 @@ following Java and Spring Boot best practices to ensure performance, scalability
 ## Technologies Used
 
 - **Java 21**
+- **mysql**
 - **Spring Boot**
 - **Spring Data JPA**
+- **Docker**
 - **ControllerAdvice & Problem Details**
 
 ## Getting Started
@@ -36,6 +38,7 @@ following Java and Spring Boot best practices to ensure performance, scalability
 
 - **Java 21**
 - **Maven**
+- **Docker**
 
 ### Steps to Run the Project
 
