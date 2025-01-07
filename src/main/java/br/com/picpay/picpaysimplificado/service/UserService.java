@@ -28,7 +28,7 @@ public class UserService {
     }
 
     public User findUserById(Long id) throws Exception {
-        return this.repository.findUserById(id).orElseThrow(() -> new PicPayGeneralException("Usuario não encontrado"));
+        return this.repository.findById(id).orElseThrow(() -> new PicPayGeneralException("Usuario não encontrado"));
     }
 
     public void saveUser(User user) {
